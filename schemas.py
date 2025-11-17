@@ -11,8 +11,8 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, Literal
 
 # Example schemas (replace with your own):
 
@@ -38,11 +38,26 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+# Recruitment Booking schema for clients (Choose Marketers)
+class Booking(BaseModel):
+    """
+    Bookings from clients wanting to schedule a call about hiring needs.
+    Collection name: "booking"
+    """
+    full_name: str = Field(..., min_length=2, description="Client's full name")
+    company: str = Field(..., min_length=2, description="Client company name")
+    email: EmailStr = Field(..., description="Business email")
+    phone: Optional[str] = Field(None, description="Contact number")
+    role_title: str = Field(..., min_length=2, description="Role or function they want to hire for")
+    hiring_need: Literal[
+        "Single hire",
+        "Multiple hires",
+        "Ongoing hiring",
+        "Exploratory call"
+    ] = Field(..., description="Type of hiring need")
+    candidates_needed: Optional[int] = Field(None, ge=1, le=1000, description="Approximate number of hires")
+    preferred_date: Optional[str] = Field(None, description="Preferred date (YYYY-MM-DD)")
+    preferred_time: Optional[str] = Field(None, description="Preferred time (HH:MM)")
+    timezone: Optional[str] = Field(None, description="Client's timezone (e.g., UTC, PST, IST)")
+    message: Optional[str] = Field(None, max_length=2000, description="Additional context or notes")
+    status: Literal["new", "contacted", "scheduled", "closed"] = Field("new", description="Internal status")
